@@ -24,7 +24,7 @@ $ docker build . -t sqlline:1
 ## No Knox
 
 ```
-$ docker run -it sqlline:1 http://$(hostname):8443
+$ docker run -it sqlline:1 http://$(hostname):8765
 ```
 
 ## With Knox
