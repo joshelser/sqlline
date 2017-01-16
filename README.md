@@ -6,13 +6,15 @@ Apache Avatica based servers via the SQL shell SqlLine.
 ## Running
 
 ```
+$ docker pull joshelser/sqlline
 $ docker run -ti joshelser/sqlline "jdbc:avatica:remote:url=http://$(hostname):8765"
 ```
 
 # Using the Apache Phoenix Query Server
 
 ```
-$ docker run -ti joshelser/phoenix-sqlline "jdbc:avatica:remote:url=http://$(hostname):8765"
+$ docker pull joshelser/phoenix-thin-sqlline
+$ docker run -ti joshelser/phoenix-thin-sqlline "jdbc:avatica:remote:url=http://$(hostname):8765"
 ```
 
 # Customizing for other Avatica-based servers
