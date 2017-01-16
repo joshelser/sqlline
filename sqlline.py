@@ -24,6 +24,7 @@ SQLLINE_CLASS='sqlline.SqlLine'
 
 TRANSACTION_LEVELS=('TRANSACTION_NONE', 'TRANSACTION_READ_COMMITTED',
     'TRANSACTION_READ_UNCOMMITTED', 'TRANSACTION_REPEATABLE_READ', 'TRANSACTION_SERIALIZABLE')
+DEFAULT_TRANSACTION_LEVEL='TRANSACTION_NONE'
 OUTPUT_FORMATS=('table', 'vertical', 'csv', 'tsv')
 
 AVATICA_RPC_AUTHENTICATION=('SPNEGO', 'DIGEST', 'BASIC', 'NONE')
@@ -56,8 +57,8 @@ parser.add_argument('--force', help='Continue to execute the provided script aft
 parser.add_argument('--header-interval', help='The interval between which headers are displayed',
         default=None, type=int)
 parser.add_argument('--incremental', help='Incrementally fetch rows', default=False, type=bool)
-parser.add_argument('--isolation', help='The transaction isolation level', default=None,
-        choices=TRANSACTION_LEVELS)
+parser.add_argument('--isolation', help='The transaction isolation level',
+        default=DEFAULT_TRANSACTION_LEVEL, choices=TRANSACTION_LEVELS)
 parser.add_argument('--max-width', help='The maximum width of the terminal', default=None, type=int)
 parser.add_argument('--max-column-width', help='The maximum width to use when displaying columns',
         default=None, type=int)
