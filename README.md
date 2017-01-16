@@ -40,6 +40,37 @@ And run it per the other examples
 $ docker run -t joshelser/custom-sqlline "jdbc:avatica:remote:url=http://$(hostname):8765"
 ```
 
+# Usage for `sqlline.py`
+
+These are the full list of arguments that you can pass to the above docker containers.
+
+```
+usage: sqlline.py [-h] [-c COLOR] [-d DRIVER] [-f FILE] [-n NAME]
+                  [-p PASSWORD] [-v VERBOSE] [--auto-commit AUTO_COMMIT]
+                  [--auto-save AUTO_SAVE] [--fast-connect FAST_CONNECT]
+                  [--force FORCE] [--header-interval HEADER_INTERVAL]
+                  [--incremental INCREMENTAL]
+                  [--isolation {TRANSACTION_NONE,TRANSACTION_READ_COMMITTED,TRANSACTION_READ_UNCOMMITTED,TRANSACTION_REPEATABLE_READ,TRANSACTION_SERIALIZABLE}]
+                  [--max-width MAX_WIDTH]
+                  [--max-column-width MAX_COLUMN_WIDTH]
+                  [--number-format NUMBER_FORMAT]
+                  [--output-format {table,vertical,csv,tsv}]
+                  [--show-header SHOW_HEADER]
+                  [--show-nested-errors SHOW_NESTED_ERRORS]
+                  [--show-time SHOW_TIME] [--show-warnings SHOW_WARNINGS]
+                  [--silent SILENT] [--avatica-user AVATICA_USER]
+                  [--avatica-password AVATICA_PASSWORD]
+                  [--avatica-authentication {SPNEGO,DIGEST,BASIC,NONE}]
+                  [--avatica-serialization {PROTOBUF,JSON}]
+                  [--avatica-truststore AVATICA_TRUSTSTORE]
+                  [--avatica-truststore-password AVATICA_TRUSTSTORE_PASSWORD]
+                  [--classpath CLASSPATH] [--java JAVA]
+                  url
+```
+
+Custom containers can also be created which automatically provide some of these options
+for a "familiar" experience with a simple command.
+
 # Using Apache Knox with Avatica (out-dated)
 
 ## Prerequisite: Start Knox and Avatica 
