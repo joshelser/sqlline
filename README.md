@@ -1,3 +1,47 @@
+# SqlLine Docker image for Apache Avatica based servers
+
+This is a collection of Docker images designed to provide access to
+Apache Avatica based servers via the SQL shell SqlLine.
+
+## Running
+
+```
+$ docker run -ti joshelser/sqlline "jdbc:avatica:remote:url=http://$(hostname):8765"
+```
+
+# Using the Apache Phoenix Query Server
+
+```
+$ docker run -ti joshelser/phoenix-sqlline "jdbc:avatica:remote:url=http://$(hostname):8765"
+```
+
+# Customizing for other Avatica-based servers
+
+Create your own Dockerfile, extending `joshelser/sqlline`, adding any necessary jars to the image
+and ensuring that the jars are added to the classpath.
+
+```
+From joshelser/sqlline
+
+ADD https://repo1.maven.org/maven2/org/apache/phoenix/phoenix-queryserver-client/4.9.0-HBase-1.2/phoenix-queryserver-client-4.9.0-HBase-1.2.jar /sqlline/lib
+
+ENTRYPOINT ["/sqlline/sqlline.py", "--classpath", "/sqlline/lib/*"]
+```
+
+Then, build the image
+
+```
+$ docker build . -t joshelser/custom-sqlline
+```
+
+And run it per the other examples
+
+```
+$ docker run -t joshelser/custom-sqlline "jdbc:avatica:remote:url=http://$(hostname):8765"
+```
+
+# Using Apache Knox with Avatica (out-dated)
+
 ## Prerequisite: Start Knox and Avatica 
 
 ```
