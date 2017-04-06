@@ -1,111 +1,80 @@
-# SqlLine Docker image for Apache Avatica based servers
+# Docker container for Sqlline
 
-This is a collection of Docker images designed to provide access to
-Apache Avatica based servers via the SQL shell SqlLine.
+[Sqlline](https://github.com/julianhyde/sqlline) is a command-line shell for issuing SQL to
+relational databases via JDBC. This project consists of a Python module (pysqlline) which
+encapsulates standard command-line access to invoking Sqlline, packaged as a Docker container.
 
-## Running
+This Docker container is flexible enough to be used with any JDBC driver packaged in a JAR.
 
-```
+## Pulling the image
+
+First, pull the latest version of the sqlline Docker container.
+
+```bash
 $ docker pull joshelser/sqlline
-$ docker run -ti joshelser/sqlline "jdbc:avatica:remote:url=http://$(hostname):8765"
 ```
 
-# Using the Apache Phoenix Query Server
+From this point, there are two options to use the Docker image
 
-```
-$ docker pull joshelser/phoenix-thin-sqlline
-$ docker run -ti joshelser/phoenix-thin-sqlline "jdbc:avatica:remote:url=http://$(hostname):8765"
-```
+### Mapping the JDBC driver into the Docker container
 
-# Customizing for other Avatica-based servers
+The Docker volumes feature can be used to provide the jar containing the JDBC driver into the
+Docker container. For example, a JAR located on the host machine at `/home/user/my_jdbc_driver/my_jdbc_driver.jar`
+can be exposed as follows to the Docker container:
 
-Create your own Dockerfile, extending `joshelser/sqlline`, adding any necessary jars to the image
-and ensuring that the jars are added to the classpath.
-
-```
-From joshelser/sqlline
-
-ADD https://repo1.maven.org/maven2/org/apache/phoenix/phoenix-queryserver-client/4.9.0-HBase-1.2/phoenix-queryserver-client-4.9.0-HBase-1.2.jar /sqlline/lib
-
-ENTRYPOINT ["/sqlline/sqlline.py", "--classpath", "/sqlline/lib/*"]
+```bash
+$ docker run --rm -v /home/user/my_jdbc_driver/:/my_jdbc_driver -it joshelser/sqlline [...]
 ```
 
-Then, build the image
+### Creating a new Docker container
 
-```
-$ docker build . -t joshelser/custom-sqlline
-```
+Similarly, a new Docker container can be created, using this one as the base image:
 
-And run it per the other examples
+```bash
+$ cat <<EOF > Dockerfile
+FROM joshelser/sqlline
 
-```
-$ docker run -t joshelser/custom-sqlline "jdbc:avatica:remote:url=http://$(hostname):8765"
-```
+RUN mkdir /my_database_jars
+ADD http://FQDN.com/path/to/my_jdbc_driver.jar /my_database_jars/
 
-# Usage for `sqlline.py`
-
-These are the full list of arguments that you can pass to the above docker containers.
-
-```
-usage: sqlline.py [-h] [-c COLOR] [-d DRIVER] [-f FILE] [-n NAME]
-                  [-p PASSWORD] [-v VERBOSE] [--auto-commit AUTO_COMMIT]
-                  [--auto-save AUTO_SAVE] [--fast-connect FAST_CONNECT]
-                  [--force FORCE] [--header-interval HEADER_INTERVAL]
-                  [--incremental INCREMENTAL]
-                  [--isolation {TRANSACTION_NONE,TRANSACTION_READ_COMMITTED,TRANSACTION_READ_UNCOMMITTED,TRANSACTION_REPEATABLE_READ,TRANSACTION_SERIALIZABLE}]
-                  [--max-width MAX_WIDTH]
-                  [--max-column-width MAX_COLUMN_WIDTH]
-                  [--number-format NUMBER_FORMAT]
-                  [--output-format {table,vertical,csv,tsv}]
-                  [--show-header SHOW_HEADER]
-                  [--show-nested-errors SHOW_NESTED_ERRORS]
-                  [--show-time SHOW_TIME] [--show-warnings SHOW_WARNINGS]
-                  [--silent SILENT] [--avatica-user AVATICA_USER]
-                  [--avatica-password AVATICA_PASSWORD]
-                  [--avatica-authentication {SPNEGO,DIGEST,BASIC,NONE}]
-                  [--avatica-serialization {PROTOBUF,JSON}]
-                  [--avatica-truststore AVATICA_TRUSTSTORE]
-                  [--avatica-truststore-password AVATICA_TRUSTSTORE_PASSWORD]
-                  [--classpath CLASSPATH] [--java JAVA]
-                  url
+CMD ["--classpath", "/sqlline/lib/*:/my_database_jars/*"]
+EOF
 ```
 
-Custom containers can also be created which automatically provide some of these options
-for a "familiar" experience with a simple command.
+## Usage for `pysqlline.py`
 
-# Using Apache Knox with Avatica (out-dated)
-
-## Prerequisite: Start Knox and Avatica 
+These are the full list of arguments that you can pass to pysqlline.
 
 ```
-$ git clone https://github.com/joshelser/knox-dev-docker/ && cd knox-dev-docker
-$ docker-compose -f docker-compose-avatica.yml up -d
+usage: pysqlline.py [-h] -d DRIVER [-c COLOR] [-f FILE] [-n NAME]
+                    [-p PASSWORD] [-v VERBOSE] [--auto-commit AUTO_COMMIT]
+                    [--auto-save AUTO_SAVE] [--fast-connect FAST_CONNECT]
+                    [--force FORCE] [--header-interval HEADER_INTERVAL]
+                    [--incremental INCREMENTAL]
+                    [--isolation {TRANSACTION_NONE,TRANSACTION_READ_COMMITTED,TRANSACTION_READ_UNCOMMITTED,TRANSACTION_REPEATABLE_READ,TRANSACTION_SERIALIZABLE}]
+                    [--max-width MAX_WIDTH]
+                    [--max-column-width MAX_COLUMN_WIDTH]
+                    [--number-format NUMBER_FORMAT]
+                    [--output-format {table,vertical,csv,tsv}]
+                    [--show-header SHOW_HEADER]
+                    [--show-nested-errors SHOW_NESTED_ERRORS]
+                    [--show-time SHOW_TIME] [--show-warnings SHOW_WARNINGS]
+                    [--silent SILENT] [--classpath CLASSPATH] [--java JAVA]
+                    url
 ```
 
-## Create the truststore
+## Example usage
 
-```
-$ cd ../avatica-sqlline.git
-$ openssl s_client -showcerts -connect localhost:8443  </dev/null
-$ <copy BEGIN CERTIFICATE to END CERTIFICATE to knox.cer>
-$ keytool -import -keystore ~/knox.jks -file ~/knox.cer -alias knox
-$ cp ~/knox.jks truststores/
-```
+[Apache Avatica](https://calcite.apache.org/avatica/) provides a database-agnostic JDBC driver which
+makes it extremely re-usable which this Docker image.
 
-## Build the container
+For example, conside the following usage for the Avatica JDBC driver with this Docker image:
 
-```
-$ docker build . -t sqlline:1
+```bash
+$ docker run --rm -v /home/user/.m2/repository/org/apache/calcite/avatica/avatica/1.10.0/:/avatica \
+    -it joshelser/sqlline --classpath '/sqlline/lib/*:/avatica/avatica-1.10.0.jar' \
+    -d org.apache.calcite.avatica.remote.Driver -n user -p password \
+    'jdbc:avatica:remote:url=http://$(hostname -f):8765;SERIALIZATION=PROTOBUF'
 ```
 
-## No Knox
-
-```
-$ docker run -it sqlline:1 http://$(hostname):8765
-```
-
-## With Knox
-
-```
-$ docker run -v $(pwd)/truststores:/truststores -it sqlline:1 "https://$(hostname):8443/gateway/sandbox/avatica/" /truststores/knox.jks <truststore_secret>
-```
+The above approach is applicable to any JDBC driver.

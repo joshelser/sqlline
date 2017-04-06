@@ -28,9 +28,11 @@ ADD https://repo1.maven.org/maven2/org/slf4j/slf4j-simple/${SLF4J_VERSION}/slf4j
 ADD https://repo1.maven.org/maven2/org/slf4j/slf4j-api/${SLF4J_VERSION}/slf4j-api-${SLF4J_VERSION}.jar /sqlline/lib/
 ADD pysqlline /sqlline/pysqlline
 
-RUN addgroup -S sqlline && adduser -S -G sqlline sqlline
-RUN chown -R sqlline: /sqlline && chmod +x /sqlline/pysqlline/pysqlline.py
+RUN chmod +x /sqlline/pysqlline/pysqlline.py
 
-USER sqlline
+# TODO Wish we could do this, but it breaks people using this image as a base image
+# USER sqlline
+# RUN addgroup -S sqlline && adduser -S -G sqlline sqlline
+# RUN chown -R sqlline: /sqlline
 
 ENTRYPOINT ["/sqlline/pysqlline/pysqlline.py"]
